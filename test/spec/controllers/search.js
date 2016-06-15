@@ -8,6 +8,7 @@ describe('Controller: SearchCtrl', function () {
   var SearchCtrl,
       location,
       dialog,
+      ga,
       scope;
 
   // Initialize the controller and a mock scope
@@ -74,6 +75,21 @@ describe('Controller: SearchCtrl', function () {
       expect(dialog.open).toHaveBeenCalledWith(options);
     });
   });
+  
+  describe('$scope.removeAll', function() {
+    it('should set searchList to single empty image', function() {
+      scope.searchList = [{ name: 'one', tag: 'oneTag' },
+                          { name: 'two', tag: 'twoTag' }];
+      
+      expect(scope.searchList.length).toEqual(2);
+      
+      scope.removeAll();
+      
+      expect(scope.searchList.length).toEqual(1);
+      expect(scope.searchList[0].name).toEqual('');
+      expect(scope.searchList[0].tag).toEqual('latest');
+    });
+  });
 
   describe('$scope.addRow', function() {
     it('should add blank row to searchList', function() {
@@ -89,6 +105,18 @@ describe('Controller: SearchCtrl', function () {
       spyOn(dialog, 'closeAll');
       scope.closeDialog();
       expect(dialog.closeAll).toHaveBeenCalled();
+    });
+  });
+
+  describe('$scope.showExampleSearch', function () {
+    it('should add example images to $scope.selectedImages', function () {
+      scope.showExampleSearch();
+      expect(scope.searchList.length).toEqual(6);
+    });
+    it('should call addImages() for the searchList', function () {
+      spyOn(scope, 'addImages');
+      scope.showExampleSearch();
+      expect(scope.addImages).toHaveBeenCalled();
     });
   });
 
@@ -108,7 +136,7 @@ describe('Controller: SearchCtrl', function () {
 
     it('should remove any image not found', function() {
       spyOn(location, 'url');
-      scope.searchList = [{'name': 'foo', 'tag': 'latest', 'found': false}];
+      scope.searchList = [{'name': 'foo', 'tag': 'latest', 'missing': true}];
       scope.addImages();
       expect(location.url).toHaveBeenCalled();
     });

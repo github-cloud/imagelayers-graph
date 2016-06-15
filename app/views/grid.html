@@ -8,6 +8,20 @@
   </svg>
 </div>
 
+<div class="info landing" ng-show="empty">
+  <h3>Welcome to ImageLayers</h3>
+  <p>
+    Visualize Docker images and the layers that compose them.<br>
+    See how each command in the Dockerfile
+    contributes to the final image, and discover which layers are shared by multiple images.
+  </p>
+  <span class="hub">
+    <div class="button action" ng-controller="SearchCtrl" ng-click="showSearch()">Search for images on the Docker Hub</div>
+    or
+  </span>
+  <div class="button"  ng-controller="SearchCtrl" ng-click="showExampleSearch()">Load a sample image set</div>
+</div>
+
 <div class="matrix">
   <div ng-repeat="box in grid" class="repeat-animation"  ng-switch on="box.layer.id">
 

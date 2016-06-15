@@ -1,34 +1,57 @@
 <main>
     <header>
         <h1 class='logo'>
-            <a href="" title="Home">ImageLayers</a>
+            <span>ImageLayers</span>
         </h1>
-        <cite class='logo'>
-            <a href="" title="CenturyLink">CenturyLink</a>
+        <cite class="cloud">
+          <a href="https://www.centurylinkcloud.com/" target="_blank" title="CenturyLink Cloud">Hosted on <span>CenturyLink Cloud</span></a>
         </cite>
+        <cite class='logo'>
+            <a href="http://www.centurylinklabs.com/" target="_blank" title="CenturyLink">CenturyLink</a>
+        </cite>
+        <nav class="ctl">
+          <ul>
+            <li about><a href="">About</a>
+            </li>
+          </ul>
+        </nav>
     </header>
-    <section class="metrics" metrics></section>
+    <section class="metrics"> 
+      <badge></badge>
+      <metrics></metrics> 
+    </section>
     <nav sticky offset='134'>
         <section class="search" ng-controller="SearchCtrl as search">
-          <h3>Docker Images</h3>
-            <div class="plus-button" ng-click="showSearch()">Add Images</div>
+          <div class="manage-images">
+            <h3>Docker Images</h3>
+            <div class="icon-button plus" ng-click="showSearch()">Manage Images</div>
             <input type='text' ng-model="filters.image" placeholder='Filter images...' reset-field>
+          </div>
+
+          <div class="sharing">
+            <span>Share URL</span>
+            <div class="addthis-icons addthis_custom_sharing"></div>
+            <div class="icon-button copy" ng-class="{ copied: copied }"  ui-zeroclip zeroclip-copied="copied=true"
+                 zeroclip-text="{{ URL }}">
+              <span ng-hide="copied">Copy URL</span>
+              <span ng-show="copied">Copied!</span>
+            </div>
+          </div>
         </section>
+        <notification></notification>
         <div class="leaves lock-horizon" ng-show="leaves.length > 0" style="width: {{ leaves.length * 210 }}px;">
-            <section ng-repeat="repo in leaves" ng-mouseenter="showCommands(repo)">
-                <div>{{ repo.name }}:{{ repo.tag }}</div>
-                <div class="size" ng-bind-html="repo.size | size "></div>
-                <div class="count">Layers: {{ repo.count }}</div>
-            </section>
+            <leaf ng-repeat="leaf in leaves" ng-mouseenter="showCommands(leaf)"></leaf>
         </div>
     </nav>
     <section class="graph" grid>
     </section>
 </main>
 <footer>
-    <section class="journal" journal scroll-glue>
+    <draggable></draggable>
+    <section class="journal" scroll-glue ng-controller="JournalCtrl">
         <ul>
             <li ng-repeat='command in commands track by $index'>{{ command }}</li>
         </ul>
     </section>
 </footer>
+<div ng-include="'views/about-menu.html'"></div>

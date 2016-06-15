@@ -1,6 +1,6 @@
 'use strict';
 
-describe('Directive: journal', function () {
+describe('Directive: loadingSrc', function () {
 
   // load the directive's module
   beforeEach(module('iLayers'));

@@ -23,20 +23,25 @@ describe('Command Service', function() {
         .toEqual('CMD test');
     });
     it('should set an undefined command to empty string', function() {
-      var result = service.constructCommand(undefined);
+      var result = service.constructCommand(undefined, 0);
       expect(result)
         .toEqual('');
     });
     it('should set a null command to FROM scratch', function() {
-      var result = service.constructCommand(null);
+      var result = service.constructCommand(null, 0);
       expect(result)
         .toEqual('FROM scratch');
+    });
+    it('should set a null command on an image with a size greater than 0 to unknown instruction', function() {
+      var result = service.constructCommand(null, 1);
+      expect(result)
+        .toEqual('unknown instruction');
     });
   });
 
   describe('highlight', function() {
     it('should broadcast "command-change" event with commands', function() {
-      service.highlight([{cmd: 'RUN this thing'}]);
+      service.highlight([{ container_config: { Cmd: ['RUN this thing'] } }]);
       expect(rootScope.$broadcast)
         .toHaveBeenCalledWith('command-change', {'commands': ['RUN this thing']});
     });

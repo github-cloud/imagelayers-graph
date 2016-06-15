@@ -24,7 +24,7 @@
   position: fixed;
   background: rgba(0, 0, 0, 0.6);
   top: 0;
-  right: 0;
+  right: 15px;
   bottom: 0;
   left: 0;
   -webkit-backface-visibility: hidden;
@@ -160,13 +160,36 @@ body.ngdialog-open {
   width: 100%;
   border-bottom: 1px solid #d8d8d8;
   padding: 20px;
+  
+  .remove {
+    font-size: 0.9em;
+    text-decoration: underline;
+    float: right;
+    cursor: pointer;
+    
+    &:hover {
+      text-decoration: none; 
+    }
+  }
+  
+  &.workflow {
+    input[type=radio] {
+      display: none;
+    }
+    label {
+      text-decoration: underline;
+      cursor: pointer;
+      &:hover {
+        color: #186D95;
+      }
+    }
+  }
 }
 
 .ngdialog.ngdialog-theme-layers main {
   padding: 20px;
-  overflow: auto;
   position: static;
-  max-height: 300px;
+  overflow: visible;
 }
 
 .ngdialog.ngdialog-theme-layers main section {
@@ -182,8 +205,42 @@ body.ngdialog-open {
   position: static;
 }
 
-.ngdialog.ngdialog-theme-layers .plus-button {
-  padding-bottom: 20px;
+.ngdialog.ngdialog-theme-layers { 
+  .plus-button {
+    clear: both;
+    float: left;
+    position: relative;
+    padding-bottom: 20px;
+    padding-left: 25px;
+    text-decoration: underline;
+    
+    &:hover {
+      cursor: pointer;
+      text-decoration: none;
+    }
+    
+    &:before {
+      content: ' ';
+      position: absolute;
+      left: 0;
+      top: 2px;
+      width: 20px;
+      height: 20px;
+      border-radius: 10px;
+      background-color: #91B748;
+    }
+    
+    &:after {
+      content: ' ';
+      position: absolute;
+      left: 2px;
+      top: 4px;
+      width: 20px;
+      height: 20px;
+      @extend .icon-plus-medium;
+      @include icon-white;
+    }
+  } 
 }
 
 .ngdialog.ngdialog-theme-layers .ngdialog-buttons {
@@ -255,6 +312,14 @@ body.ngdialog-open {
   }
 }
 
+.ngdialog.ngdialog-theme-layers .styled-select.searching {
+  background: url('../images/loading.gif') no-repeat 98% center;
+  
+  &:after {
+   display: none; 
+  }
+}
+
 .ngdialog.ngdialog-theme-layers .image-name {
   counter-increment: autocomplete;
   width: 438px;
@@ -271,6 +336,67 @@ body.ngdialog-open {
 
   &:hover {
     @include icon-red;
+  }
+}
+
+.ngdialog.ngdialog-theme-layers.badge-dialog {
+  main {
+    section {
+      display: inline-block;
+      width: 100%;
+      &.hub {
+        .image-name {
+          clear: both;
+          margin-bottom: 30px;
+        }
+      }
+    }
+    select {
+      z-index: +1;
+      margin-bottom: 30px;
+    }
+
+    label {
+      margin: 18px 7px 0 0;
+      float: left;
+    }
+    div.preview {
+      clear: both;
+      padding: 20px 0;
+      border-top: 1px solid #ccc;
+      border-bottom: 1px solid #ccc;
+      label {
+        margin-top: 0;
+      }
+      img {
+        position: relative;
+        top: 3px;
+      }
+    }
+  }
+  
+  ul:not(.ac-menu) {
+    margin-top: 10px;
+    clear: both;
+    li {
+      display: block;
+      width: 100%;
+
+      label {
+        width: 90px;
+      }
+      input[type=text] {
+        float: none;
+        display: inline-block;
+        width: calc(95% - 280px);
+        margin-right: 0;
+      }
+      div.copy {
+        display: inline-block;
+        float: right;
+        width: 190px;
+      }
+    }
   }
 }
 
@@ -333,9 +459,20 @@ body.ngdialog-open {
   border: 1px solid #c5c5c5;
   position: relative;
 
+  &:after {
+    content: '';
+    width: 15px;
+    height: 15px;
+    position: absolute;
+    right: 10px;
+    top: 15px;
+    @include icon-grey;
+    @extend .icon-thick-arrow-down;
+  }
+
   select {
     background: transparent;
-    width: 190px;
+    width: 200px;
     margin: 10px 0 0 10px;
     font-size: 15px;
     font-style: italic;
@@ -344,5 +481,8 @@ body.ngdialog-open {
     border-radius: 0;
     outline: none;
     text-indent: 1px;
+    appearance: none;
+    -moz-appearance: none;
+    -webkit-appearance: none;
   }
 }

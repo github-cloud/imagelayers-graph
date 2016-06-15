@@ -4,7 +4,7 @@ describe('DashboardCtrl', function() {
 
   var ctrl, scope, layers, registryService, commandService, data;
 
-  beforeEach(inject(function ($controller, $rootScope, _registryService_, _commandService_) {
+  beforeEach(inject(function ($controller, $rootScope, $window, _registryService_, _commandService_) {
     scope = $rootScope.$new();
 
     registryService = _registryService_;
@@ -13,6 +13,8 @@ describe('DashboardCtrl', function() {
     ctrl = $controller('DashboardCtrl', {
       $scope: scope
     });
+
+    var window = $window;
   }));
 
   it('should initialize graph', function() {
@@ -47,12 +49,45 @@ describe('DashboardCtrl', function() {
     });
   });
 
+  describe('detectMobile', function() {
+
+    var setUserAgent = function(window, userAgent) {
+      if (window.navigator.userAgent != userAgent) {
+        var userAgentProp = { get: function () { return userAgent; } };
+        window.navigator = Object.create(navigator, {
+          userAgent: userAgentProp
+        });
+      }
+    };
+
+    afterEach(inject(function ($window){
+      setUserAgent(window, $window.navigator.userAgent);
+    }));
+
+    it('should set $scope.mobile to false if the user agent string does not have mobile keywords', function (){
+      setUserAgent(window, 'desktop');
+      ctrl.detectMobile();
+      expect(scope.mobile).toEqual(false);
+    });
+
+    it('should set $scope.mobile to true if the user agent is has the iPhone keyword', function (){
+      setUserAgent(window, 'iPhone');
+      ctrl.detectMobile();
+      expect(scope.mobile).toEqual(true);
+    });
+
+    it('should set $scope.mobile to true if the user agent is has the android keyword', function (){
+      setUserAgent(window, 'android');
+      ctrl.detectMobile();
+      expect(scope.mobile).toEqual(true);
+    });
+  });
+
   describe('searchImages', function() {
 
     beforeEach(inject(function($q) {
       deferredSuccess = $q.defer();
       spyOn(registryService, 'inspect').and.returnValue(deferredSuccess.promise);
-      //deferredSuccess.resolve({data: {'repo': {}, 'layers': []}});
     }));
 
     it('should do nothing when no images provided', function() {
@@ -109,24 +144,19 @@ describe('DashboardCtrl', function() {
       expect(result.length).toEqual(1);
       expect(result[0].repo.name).toEqual('foo');
     });
-  });
-
-  describe('showCommands', function() {
-    beforeEach(function() {
-      scope.graph = [{ 'repo': { 'name': 'foo', 'tag': 'do'}, layers: ['one', 'two'] }];
-      spyOn(commandService, 'highlight');
+    
+    it('should call commandService.release()', function() {
+      spyOn(commandService,'release');
+      scope.applyFilters(data, 'foo');
+      scope.$digest();
+      expect(commandService.release).toHaveBeenCalled();
     });
-
-    it('should send all layers to commandService.highlight', function() {
-      var repo = { 'name': 'foo', 'tag': 'do'};
-      scope.showCommands(repo);
-      expect(commandService.highlight).toHaveBeenCalledWith(['one','two']);
-    });
-
-    it('should not call commandService if no image matches', function() {
-      var repo = { 'name': 'boo', 'tag': 'hoo'};
-      scope.showCommands(repo);
-      expect(commandService.highlight).not.toHaveBeenCalled();
+    
+    it('should call commandService.lock()', function() {
+      spyOn(commandService,'lock');
+      scope.applyFilters(data, 'foo');
+      scope.$digest();
+      expect(commandService.lock).toHaveBeenCalledWith(undefined);
     });
   });
 });

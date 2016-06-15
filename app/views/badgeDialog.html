@@ -1,0 +1,55 @@
+<header>
+    Get an Image Badge
+</header>
+<aside class="workflow">
+     <p>Create a badge to place on your image's Docker Hub page. The ImageLayers badge provides information about the size of an image, and how many layers it is composed of.</p>
+     <p ng-show="imageList().length > 0">You can select an image from
+       <span>
+        <input type="radio" ng-model="selectedWorkflow" id="imagelayers" value="imagelayers"/>
+        <label for="imagelayers">ImageLayers</label>
+        or
+      </span>
+      <span>
+        the
+        <input type="radio" ng-model="selectedWorkflow" id="hub" value="hub"/>
+        <label for="hub">Docker Hub</label>
+      </span>
+     </p>
+</aside>
+<main>
+    <section ng-show="selectedWorkflow == 'imagelayers'">
+      <label>Select your image</label>
+      <select ng-options="image.name for image in imageList() | orderBy:'name'" ng-model="selectedImage" class="styled-select"></select>
+    </section>
+    <section ng-class="selectedWorkflow" ng-show="selectedWorkflow == 'hub'" mass-autocomplete>
+      <label>Search for an image on the Docker Hub</label>
+      <div image-search data-model="selectedImage"></div>
+    </section>
+
+    <section ng-if="selectedImage.selected">
+      <div class="preview">
+        <label>Badge Preview</label>
+        <img loading-src="https://badge.imagelayers.io/{{ selectedImage.name }}.svg">
+      </div>
+      <ul>
+        <li>
+          <label>HTML</label>
+          <input type="text" value="{{ badgeAsHtml() }}"/>
+          <div class="icon-button copy" ng-class="{ copied: htmlCopied }"  ui-zeroclip zeroclip-copied="htmlCopied=true"
+               zeroclip-text="{{  badgeAsHtml() }}">
+            <span ng-hide="htmlCopied">Copy to Clipboard</span>
+            <span ng-show="htmlCopied">Copied to Clipboard</span>
+          </div>
+        </li>
+        <li>
+          <label>Markdown</label>
+          <input type="text" value="{{ badgeAsMarkdown() }}"/>
+          <div class="icon-button copy" ng-class="{ copied: markdownCopied }"  ui-zeroclip zeroclip-copied="markdownCopied=true"
+               zeroclip-text="{{  badgeAsMarkdown() }}">
+            <span ng-hide="markdownCopied">Copy to Clipboard</span>
+            <span ng-show="markdownCopied">Copied to Clipboard</span>
+          </div>
+        </li>
+      </ul>
+    </section>
+</main>

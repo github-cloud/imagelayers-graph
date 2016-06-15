@@ -6,9 +6,9 @@ describe('Directive: grid', function () {
   // Load the templates
   beforeEach(module('views/grid.html'));
 
-var directive, scope, controller, layer, commandService, gridService;
+var directive, scope, route, controller, layer, commandService, gridService;
 
-  beforeEach(inject(function ($compile, $rootScope, _commandService_, _gridService_) {
+  beforeEach(inject(function ($compile, $rootScope, $routeParams, _commandService_, _gridService_) {
     var elem = angular.element("<section grid graph='graph'></section>");
     scope = $rootScope.$new();
     scope.graph = [];
@@ -19,6 +19,7 @@ var directive, scope, controller, layer, commandService, gridService;
     layer = { Size: 0, container_config: { Cmd: [] } };
     commandService = _commandService_;
     gridService = _gridService_;
+    route = $routeParams;
   }));
 
   describe('classifyLayer', function() {
@@ -28,16 +29,61 @@ var directive, scope, controller, layer, commandService, gridService;
     });
 
     it('should return command classes', function() {
-      layer.container_config.Cmd = [' curl '];
-      expect(controller.classifyLayer(layer, 1)).toEqual('box curl');
-      layer.container_config.Cmd = [' ADD '];
-      expect(controller.classifyLayer(layer, 1)).toEqual('box add');
-      layer.container_config.Cmd = [' ENV '];
-      expect(controller.classifyLayer(layer, 1)).toEqual('box env');
-      layer.container_config.Cmd = [' install '];
-      expect(controller.classifyLayer(layer, 1)).toEqual('box add');
-      layer.container_config.Cmd = [' CMD '];
-      expect(controller.classifyLayer(layer, 1)).toEqual('box cmd');
+      layer.container_config.Cmd = ['RUN '];
+      expect(controller.classifyLayer(layer, 1)).toEqual('box cat1');
+      layer.container_config.Cmd = ['ADD '];
+      expect(controller.classifyLayer(layer, 2)).toEqual('box cat2');
+      layer.container_config.Cmd = ['VOLUME '];
+      expect(controller.classifyLayer(layer, 1)).toEqual('box cat3');
+      layer.container_config.Cmd = ['CMD '];
+      expect(controller.classifyLayer(layer, 1)).toEqual('box cat4');
+      layer.container_config.Cmd = ['FROM '];
+      expect(controller.classifyLayer(layer, 1)).toEqual('box cat5');
+    });
+  });
+  
+  describe('$scope.checkLockParam', function() {
+    beforeEach(function() {
+      spyOn(commandService, 'lock');
+    });
+    
+    describe('when route has lock', function() {
+      it('should call commandService.lock', function() {
+        route.lock = 'test:foo';
+        scope.checkLockParam();
+        expect(commandService.lock).toHaveBeenCalledWith({ name: 'test', tag: 'foo' });
+      });
+      
+      it('should add latest tag if not provided', function() {
+        route.lock = 'test';
+        scope.checkLockParam();
+        expect(commandService.lock).toHaveBeenCalledWith({ name: 'test', tag: 'latest' });
+      });
+    });
+    
+    describe('when route has no lock', function() {
+      it('should not call commandService.lock', function() {
+        scope.checkLockParam();
+        expect(commandService.lock).not.toHaveBeenCalled();
+      });
+    });
+  });
+  
+  describe('scope.$on("lock-image")', function() {
+    beforeEach(function() {
+      scope.graph = [{ repo: { name: 'foo', tag: 'foo' }, layers: [{ id: '1' }] }];
+      scope.grid = [{type: '', layer: { id: '1' } }];
+    });
+    
+    it('should lock layers', function() {
+      scope.$broadcast('lock-image', { image: { name: 'foo', tag: 'foo' } });
+      expect(scope.grid[0].type).toEqual(' locked');
+    });
+    
+    it('should unlock layers when already locked', function() {
+      scope.grid[0].type = 'locked';
+      scope.$broadcast('lock-image', {});
+      expect(scope.grid[0].type).toEqual('');
     });
   });
 
@@ -47,11 +93,11 @@ var directive, scope, controller, layer, commandService, gridService;
     });
 
     it('should return box width when count is 1', function() {
-      expect(controller.findWidth(1)).toEqual(180);
+      expect(controller.findWidth(1)).toEqual(160);
     });
 
     it('should return box width + 20 padding', function() {
-      expect(controller.findWidth(2)).toEqual(380);
+      expect(controller.findWidth(2)).toEqual(360);
     });
   });
 
@@ -66,10 +112,13 @@ var directive, scope, controller, layer, commandService, gridService;
   });
 
   describe('scope.highlightCommand', function() {
-
   });
 
   describe('scope.clearCommand', function() {
-
+    it('should call commandService.clear()', function() {
+      spyOn(commandService, 'clear');
+      scope.clearCommands();
+      expect(commandService.clear).toHaveBeenCalled();
+    });
   });
 });

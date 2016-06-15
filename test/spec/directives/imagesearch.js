@@ -11,11 +11,14 @@ describe('Directive: imageSearch', function () {
       directive,
       registryService,
       deferredTag,
+      deferredSuccess,
+      rootScope,
       scope;
 
   beforeEach(inject(function ($q, $compile, $rootScope, _registryService_) {
-    var rootScope = $rootScope.$new(),
-       autoElem = angular.element("<div mass-autocomplete><section image-search model='model'></section></div>");
+    var autoElem = angular.element("<div mass-autocomplete><section image-search model='model' with-tags></section></div>");
+
+    rootScope = $rootScope.$new();
 
     directive = $compile(autoElem)(rootScope);
     rootScope.$digest();
@@ -25,7 +28,6 @@ describe('Directive: imageSearch', function () {
     controller = element.controller('imageSearch');
 
     registryService = _registryService_;
-    rootScope.model = {'name': 'foo', 'tag': '1.0.0'};
   }));
 
   it('should initialize tagList', function() {
@@ -45,9 +47,9 @@ describe('Directive: imageSearch', function () {
 
   describe('suggestImages', function() {
     beforeEach(inject(function($q) {
-      var deferredSuccess = $q.defer();
+      deferredSuccess = $q.defer();
       spyOn(registryService, 'search').and.returnValue(deferredSuccess.promise);
-      deferredSuccess.resolve({ data: { results: [{ name: 'foo' },{ name: 'bar' }] } });
+      scope.model = { name: 'test' };
     }));
 
     it('should return empty array when term size < 3', function() {
@@ -56,48 +58,49 @@ describe('Directive: imageSearch', function () {
     });
 
     it('calls registryService.search when term > 2', function() {
+      deferredSuccess.resolve({ data: { results: [{ name: 'foo' },{ name: 'bar' }] } });
+
       var list = scope.suggestImages('term');
       expect(registryService.search).toHaveBeenCalledWith('term');
+    });
+
+    describe('when image is valid', function() {
+      it('should remove missing', function() {
+        deferredSuccess.resolve({ data: { results: [{ name: 'foo' },{ name: 'bar' }] } });
+
+        scope.suggestImages('xtermx');
+
+        scope.$apply();
+
+        expect(scope.model.missing).toBe(true);
+      });
+    });
+
+    describe('when image is not in results', function() {
+      it('should set missing flag', function() {
+        expect(scope.model.missing).toBeFalsy();
+        deferredSuccess.resolve({ data: { results: [{ name: 'term/bar' },{ name: 'bar' }] } });
+
+        scope.suggestImages('term');
+
+        scope.$apply();
+
+        expect(scope.model.missing).toBeTruthy();
+      });
     });
   });
 
   describe('$watch model', function() {
-    it('should fetchTags when model changes', inject(function($q) {
+    it('should fetchTags when model intially loaded', inject(function($q) {
       var deferredTag = $q.defer();
       spyOn(registryService, 'fetchTags').and.returnValue(deferredTag.promise);
       deferredTag.resolve({});
 
       scope.model = { name: 'blah' };
       scope.$digest();
+      scope.model = { name: 'blah' };
+      scope.$digest();
       expect(registryService.fetchTags).toHaveBeenCalled();
     }));
-
-    describe('when image is valid', function() {
-      beforeEach(inject(function($q) {
-        var deferredSuccess = $q.defer();
-        spyOn(registryService, 'fetchTags').and.returnValue(deferredSuccess.promise);
-        deferredSuccess.resolve({ data: { 'latest': 'latest' } });
-      }));
-
-      it('should set found to true', function() {
-        scope.model = { name: 'blah' };
-        scope.$digest();
-        expect(scope.model.found).toBeTruthy();
-      });
-    });
-
-    describe('when image is not valid', function() {
-      beforeEach(inject(function($q) {
-        var deferredSuccess = $q.defer();
-        spyOn(registryService, 'fetchTags').and.returnValue(deferredSuccess.promise);
-        deferredSuccess.resolve({ data: {} });
-      }));
-
-      it('should set found to false', function() {
-        scope.model = { name: 'blah' };
-        scope.$digest();
-        expect(scope.model.found).toBeFalsy();
-      });
-    });
   });
 });

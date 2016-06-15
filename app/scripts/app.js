@@ -1,33 +1,25 @@
-'use strict';
+(function() {
+  'use strict';
 
-angular
-  .module('iLayers', [
-    'ngRoute',
-    'ngAnimate',
-    'ngDialog',
-    'MassAutoComplete',
-    'luegg.directives',
-    'config'
-  ])
-  .config(['$httpProvider', '$locationProvider', '$routeProvider',
-    function($httpProvider, $locationProvider, $routeProvider) {
+  angular
+    .module('iLayers', [
+      'ngRoute',
+      'ngAnimate',
+      'ngDialog',
+      'MassAutoComplete',
+      'luegg.directives',
+      'config',
+      'zeroclipboard'
+    ])
+    .config(configure);
+  
+    configure.$inject = ['$httpProvider', '$locationProvider', '$routeProvider', 'uiZeroclipConfigProvider'];
 
-      var errorInterceptor = function($q) {
-        return {
-          response: function(response) {
-            return response;
-          },
-          responseError: function(response) {
-            console.log(response);
-            return $q.reject(response);
-          }
-        };
-      };
-
-      $httpProvider.interceptors.push(errorInterceptor);
+    function configure($httpProvider, $locationProvider, $routeProvider, uiZeroclipConfigProvider) {
+      $httpProvider.interceptors.push('errorInterceptor');
       $httpProvider.defaults.withCredentials = false;
 
-      $locationProvider.html5Mode(false);
+      $locationProvider.html5Mode(true);
 
       $routeProvider
       .when ('/', {
@@ -39,4 +31,8 @@ angular
         redirectTo: '/'
       });
 
-  }]);
+      uiZeroclipConfigProvider.setZcConf({
+        swfPath: 'vendor/ZeroClipboard.swf'
+      });
+    }
+})();
